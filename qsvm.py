@@ -41,14 +41,19 @@ class QSVM:
 
 
 class Data:
-    def __init__(self, f_in):
-        self.filename = f_in
-        self.get_data()
-
+    def __init__(self, f_in, summary=False):
         # initialize seed for reproducibility
-        # algorithm_globals.random_seed = 12345
+        algorithm_globals.random_seed = 12345
 
-        # # initalize training and testing data
+        self.filename = f_in
+        self.get_data(summary)
+
+        # initalize training and testing data
+        self.get_datasets()
+
+        # drop features
+        self.drop_feauters(['Time', 'Class'])
+
         # self.adhoc_dimension = 2
         # self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
         #     training_size=20,
@@ -60,10 +65,29 @@ class Data:
         #     include_sample_total=True,
         # )
 
-    def get_data(self):
+    def get_data(self, summary):
         # read in data and convert to data frame
-        # TODO: add config file
-        self.ccdf = pd.DataFrame(pd.read_csv(self.filename))
+        self.df = pd.DataFrame(pd.read_csv(self.filename))
+
+        #  description of statistic features (Sum, Average, Variance, minimum, 1st quartile, 2nd quartile, 3rd Quartile and Maximum)
+        if summary:
+            print(self.df.describe())
+
+    def get_datasets(self):
+        # generic var names for code reusability
+        # take subset of original data
+        df_train_all = self.df[0:150000]
+        # seperate the data into frauds and no frauds, 1 and 0 respectively
+        df_train_1 = df_train_all[df_train_all['Class'] == 1]
+        df_train_0 = df_train_all[df_train_all['Class'] == 0]
+        df_sample = df_train_0.sample(len(df_train_1))
+        # join and then mix dataset for training dataset
+        self.df_train = df_train_1.append(df_sample).sample(frac=1)
+        # print(self.df_train.head())
+
+    def drop_feauters(self, feat_ls):
+        self.df_train.drop(feat_ls,axis=1)
+        
 
     @staticmethod
     def plot_features(ax, features, labels, class_label, marker, face, edge, label):
@@ -108,4 +132,4 @@ class Data:
 
 
 # init credit card data set
-data = Data('input\creditcard.csv\creditcard.csv')
+data = Data('input\creditcard.csv\creditcard.csv', summary=False)
