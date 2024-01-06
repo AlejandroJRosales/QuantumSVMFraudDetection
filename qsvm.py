@@ -44,17 +44,12 @@ class Data:
     def __init__(self, f_in, summary=False):
         # initialize seed for reproducibility
         algorithm_globals.random_seed = 12345
+        self.adhoc_dimension = 2
 
         self.filename = f_in
         self.get_data(summary)
+        self.set_datasets()
 
-        # initalize training and testing data
-        self.get_datasets()
-
-        # drop features
-        self.drop_feauters(['Time', 'Class'])
-
-        # self.adhoc_dimension = 2
         # self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
         #     training_size=20,
         #     test_size=5,
@@ -68,27 +63,28 @@ class Data:
     def get_data(self, summary):
         # read in data and convert to data frame
         self.df = pd.DataFrame(pd.read_csv(self.filename))
-
-        #  description of statistic features (Sum, Average, Variance, minimum, 1st quartile, 2nd quartile, 3rd Quartile and Maximum)
         if summary:
+            # statistic features for data
             print(self.df.describe())
 
-    def get_datasets(self):
-        # generic var names for code reusability
-        # take subset of original data
-        df_train_all = self.df[0:150000]
-        # seperate the data into frauds and no frauds, 1 and 0 respectively
-        df_train_1 = df_train_all[df_train_all['Class'] == 1]
-        df_train_0 = df_train_all[df_train_all['Class'] == 0]
-        df_sample = df_train_0.sample(len(df_train_1))
-        # join and then mix dataset for training dataset
-        self.df_train = df_train_1.append(df_sample).sample(frac=1)
-        # print(self.df_train.head())
+    def set_datasets(self):
+        self.train_features, self.train_labels = self.set_data(0, 150000, clean=True)
+        self.test_features, self.test_labels = self.set_data(15000, -1)
 
-    def drop_feauters(self, feat_ls):
-        self.df_train.drop(feat_ls,axis=1)
+    def set_data(self, idx_start, idx_end, clean=False):
+        df_subdata = self.clean_data(self.df[idx_start:idx_end]) if clean else self.df[idx_start:idx_end]
+        return np.asarray(df_subdata.drop(['Time', 'Class'], axis=1)), np.asarray(df_subdata['Class'])
+
+    def clean_data(self, data):
+        # seperate the data by labels
+        df_1 = data[data['Class'] == 1]
+        df_0 = data[data['Class'] == 0]
+        # take similar number of non-fraud to cover for oversampling
+        self.sample_total = len(df_1)
+        df_0 = df_0.sample(self.sample_total)
+        # join and mix dataset
+        return df_1.append(df_0).sample(frac=1)
         
-
     @staticmethod
     def plot_features(ax, features, labels, class_label, marker, face, edge, label):
         # A train plot
@@ -103,13 +99,12 @@ class Data:
             label=label,
         )
 
-
     def plot_dataset(self):
         plt.figure(figsize=(5, 5))
         plt.ylim(0, 2 * np.pi)
         plt.xlim(0, 2 * np.pi)
         plt.imshow(
-            np.asmatrix(self.adhoc_total).T,
+            np.asmatrix(self.sample_total).T,
             interpolation="nearest",
             origin="lower",
             cmap="RdBu",
@@ -133,3 +128,4 @@ class Data:
 
 # init credit card data set
 data = Data('input\creditcard.csv\creditcard.csv', summary=False)
+# data.plot_dataset()
