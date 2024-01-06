@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 # dataset libs
 from qiskit_algorithms.utils import algorithm_globals
@@ -24,7 +25,7 @@ class QSVM:
             self.test_fit()
 
     def quantum_kernel(self):
-        # 2-qubit ZZ feature mapping
+        # init kenrel and 2-qubit ZZ feature mapping
         self.adhoc_feature_map = ZZFeatureMap(feature_dimension=data.adhoc_dimension, reps=2, entanglement="linear")
         self.sampler = Sampler()
         self.fidelity = ComputeUncompute(sampler=self.sampler)
@@ -40,21 +41,29 @@ class QSVM:
 
 
 class Data:
-    def __init__(self):
-        # initialize seed for reproducibility
-        algorithm_globals.random_seed = 12345
+    def __init__(self, f_in):
+        self.filename = f_in
+        self.get_data()
 
-        # initalize training and testing data
-        self.adhoc_dimension = 2
-        self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
-            training_size=20,
-            test_size=5,
-            n=self.adhoc_dimension,
-            gap=0.3,
-            plot_data=False,
-            one_hot=False,
-            include_sample_total=True,
-        )
+        # initialize seed for reproducibility
+        # algorithm_globals.random_seed = 12345
+
+        # # initalize training and testing data
+        # self.adhoc_dimension = 2
+        # self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
+        #     training_size=20,
+        #     test_size=5,
+        #     n=self.adhoc_dimension,
+        #     gap=0.3,
+        #     plot_data=False,
+        #     one_hot=False,
+        #     include_sample_total=True,
+        # )
+
+    def get_data(self):
+        # read in data and convert to data frame
+        # TODO: add config file
+        self.ccdf = pd.DataFrame(pd.read_csv(self.filename))
 
     @staticmethod
     def plot_features(ax, features, labels, class_label, marker, face, edge, label):
@@ -98,11 +107,5 @@ class Data:
         plt.show()
 
 
-# generate data
-data = Data()
-data.plot_dataset()
-
-# init quantum kernel
-qsvm = QSVM(data)
-# fit kernel and test fit
-qsvm.fit(test=True)
+# init credit card data set
+data = Data('input\creditcard.csv\creditcard.csv')

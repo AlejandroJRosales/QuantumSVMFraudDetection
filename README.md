@@ -33,6 +33,16 @@ pip install qiskit-machine-learning
 
 ### Non-Qiskit Libraries
 
+**Our 'Data' Libraries**
+
+```
+pip install numpy
+```
+
+```
+pip install pandas
+```
+
 **SKLearn Machine Learning Library**
 
 ```
@@ -51,7 +61,7 @@ filename: creditcard.csv
 
 size: 150.83MB
 
-type: csvq
+type: csv
 
 dimensions: ...
 
