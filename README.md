@@ -39,3 +39,19 @@ pip install qiskit-machine-learning
 pip install -U scikit-learn
 ```
 
+## Dataset
+
+Credit Card Fraud Dataset provided by Kaggle.
+
+Input Data:
+
+source: https://www.kaggle.com/code/pierra/credit-card-dataset-svm-classification/input
+
+filename: creditcard.csv
+
+size: 150.83MB
+
+type: csvq
+
+dimensions: ...
+
