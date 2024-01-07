@@ -20,23 +20,27 @@ class QSVM:
         self.quantum_kernel()
 
     def fit(self, test=False):
+        print("Starting fit.")
         self.fit_kernel()
+        print("Done.")
         if test:
+            print("Starting test.")
             self.test_fit()
+            print("Done.")
 
     def quantum_kernel(self):
         # init kenrel and 2-qubit ZZ feature mapping
-        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=data.adhoc_dimension, reps=2, entanglement="linear")
+        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=self.data.adhoc_dimension, reps=2, entanglement="linear")
         self.sampler = Sampler()
         self.fidelity = ComputeUncompute(sampler=self.sampler)
         self.adhoc_kernel = FidelityQuantumKernel(fidelity=self.fidelity, feature_map=self.adhoc_feature_map)
 
     def fit_kernel(self):
         self.adhoc_svc = SVC(kernel=self.adhoc_kernel.evaluate)
-        self.adhoc_svc.fit(data.train_features, data.train_labels)
+        self.adhoc_svc.fit(self.data.train_features, self.data.train_labels)
 
     def test_fit(self):
-        adhoc_score_callable_function = self.adhoc_svc.score(data.test_features, data.test_labels)
+        adhoc_score_callable_function = self.adhoc_svc.score(self.data.test_features, self.data.test_labels)
         print(f"Callable kernel classification test score: {adhoc_score_callable_function}")
 
 
@@ -69,7 +73,7 @@ class Data:
 
     def set_datasets(self):
         self.train_features, self.train_labels = self.set_dataset(0, 150000, clean=True)
-        self.test_features, self.test_labels = self.set_dataset(15000, -1)
+        self.test_features, self.test_labels = self.set_dataset(150000, -1)
 
     def set_dataset(self, idx_start, idx_end, clean=False):
         df_subdata = self.clean_data(self.df[idx_start:idx_end]) if clean else self.df[idx_start:idx_end]
@@ -77,10 +81,11 @@ class Data:
 
     def clean_data(self, data):
         # seperate data by labels
-        df_1 = data[data['Class'] == 1]
+        df_1 = data[data['Class'] == 1][0:10]
         df_0 = data[data['Class'] == 0]
         # take similar number of non-fraud to cover for oversampling
         self.sample_total = len(df_1)
+        print(self.sample_total)
         df_0 = df_0.sample(self.sample_total)
         # join and mix data
         return df_1.append(df_0).sample(frac=1)
@@ -132,7 +137,7 @@ credit_card_data = Data('input\creditcard.csv\creditcard.csv', summary=False)
 
 # init quantum kernel
 qsvm = QSVM(credit_card_data)
-# fit kernel and test fit
+# fit quantum kernel on credit card data and test fit
 qsvm.fit(test=True)
 
 # This code is part of Qiskit.
