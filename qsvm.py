@@ -48,6 +48,7 @@ class Data:
 
         self.filename = f_in
         self.get_data(summary)
+        # initialize training and testing dataset and labels
         self.set_datasets()
 
         # self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
@@ -60,29 +61,28 @@ class Data:
         #     include_sample_total=True,
         # )
 
-    def get_data(self, summary):
+    def get_data(self, summary=False):
         # read in data and convert to data frame
         self.df = pd.DataFrame(pd.read_csv(self.filename))
         if summary:
-            # statistic features for data
             print(self.df.describe())
 
     def set_datasets(self):
-        self.train_features, self.train_labels = self.set_data(0, 150000, clean=True)
-        self.test_features, self.test_labels = self.set_data(15000, -1)
+        self.train_features, self.train_labels = self.set_dataset(0, 150000, clean=True)
+        self.test_features, self.test_labels = self.set_dataset(15000, -1)
 
-    def set_data(self, idx_start, idx_end, clean=False):
+    def set_dataset(self, idx_start, idx_end, clean=False):
         df_subdata = self.clean_data(self.df[idx_start:idx_end]) if clean else self.df[idx_start:idx_end]
         return np.asarray(df_subdata.drop(['Time', 'Class'], axis=1)), np.asarray(df_subdata['Class'])
 
     def clean_data(self, data):
-        # seperate the data by labels
+        # seperate data by labels
         df_1 = data[data['Class'] == 1]
         df_0 = data[data['Class'] == 0]
         # take similar number of non-fraud to cover for oversampling
         self.sample_total = len(df_1)
         df_0 = df_0.sample(self.sample_total)
-        # join and mix dataset
+        # join and mix data
         return df_1.append(df_0).sample(frac=1)
         
     @staticmethod
@@ -127,5 +127,22 @@ class Data:
 
 
 # init credit card data set
-data = Data('input\creditcard.csv\creditcard.csv', summary=False)
+credit_card_data = Data('input\creditcard.csv\creditcard.csv', summary=False)
 # data.plot_dataset()
+
+# init quantum kernel
+qsvm = QSVM(credit_card_data)
+# fit kernel and test fit
+qsvm.fit(test=True)
+
+# This code is part of Qiskit.
+#
+# (C) Copyright IBM 2019.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
