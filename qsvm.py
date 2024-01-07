@@ -12,11 +12,15 @@ from qiskit_machine_learning.kernels import FidelityQuantumKernel
 # SVClassification lib
 from sklearn.svm import SVC
 
+# same seed for reproducibility
+algorithm_globals.random_seed = 12345
 
 class QSVM:
     def __init__(self, data):
         # init quantum kernel
         self.data = data
+        # 29 dimensional space
+        self.adhoc_dimension = 29
         self.quantum_kernel()
 
     def fit(self, test=False):
@@ -30,7 +34,7 @@ class QSVM:
 
     def quantum_kernel(self):
         # init kenrel and 2-qubit ZZ feature mapping
-        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=self.data.adhoc_dimension, reps=2, entanglement="linear")
+        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=self.adhoc_dimension, reps=2, entanglement="linear")
         self.sampler = Sampler()
         self.fidelity = ComputeUncompute(sampler=self.sampler)
         self.adhoc_kernel = FidelityQuantumKernel(fidelity=self.fidelity, feature_map=self.adhoc_feature_map)
@@ -46,24 +50,10 @@ class QSVM:
 
 class Data:
     def __init__(self, f_in, summary=False):
-        # initialize seed for reproducibility
-        algorithm_globals.random_seed = 12345
-        self.adhoc_dimension = 2
-
         self.filename = f_in
         self.get_data(summary)
         # initialize training and testing dataset and labels
         self.set_datasets()
-
-        # self.train_features, self.train_labels, self.test_features, self.test_labels, self.adhoc_total = ad_hoc_data(
-        #     training_size=20,
-        #     test_size=5,
-        #     n=self.adhoc_dimension,
-        #     gap=0.3,
-        #     plot_data=False,
-        #     one_hot=False,
-        #     include_sample_total=True,
-        # )
 
     def get_data(self, summary=False):
         # read in data and convert to data frame
@@ -77,15 +67,17 @@ class Data:
 
     def set_dataset(self, idx_start, idx_end, clean=False):
         df_subdata = self.clean_data(self.df[idx_start:idx_end]) if clean else self.df[idx_start:idx_end]
+        # for testing uncomment line; below grab first 2 features and use 20 samples
+        # return np.asarray(df_subdata[['V1', 'V2']])[0:20], np.asarray(df_subdata['Class'])[0:20]
+        # for testing comment line below
         return np.asarray(df_subdata.drop(['Time', 'Class'], axis=1)), np.asarray(df_subdata['Class'])
 
     def clean_data(self, data):
         # seperate data by labels
-        df_1 = data[data['Class'] == 1][0:10]
+        df_1 = data[data['Class'] == 1]
         df_0 = data[data['Class'] == 0]
         # take similar number of non-fraud to cover for oversampling
         self.sample_total = len(df_1)
-        print(self.sample_total)
         df_0 = df_0.sample(self.sample_total)
         # join and mix data
         return df_1.append(df_0).sample(frac=1)
@@ -109,6 +101,7 @@ class Data:
         plt.ylim(0, 2 * np.pi)
         plt.xlim(0, 2 * np.pi)
         plt.imshow(
+            # if testing, use chosen sample size
             np.asmatrix(self.sample_total).T,
             interpolation="nearest",
             origin="lower",
@@ -132,8 +125,8 @@ class Data:
 
 
 # init credit card data set
-credit_card_data = Data('input\creditcard.csv\creditcard.csv', summary=False)
-# data.plot_dataset()
+credit_card_data = Data('input\creditcard.csv\creditcard.csv', summary=True)
+# credit_card_data.plot_dataset()
 
 # init quantum kernel
 qsvm = QSVM(credit_card_data)
