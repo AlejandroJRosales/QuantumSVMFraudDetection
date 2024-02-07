@@ -1,5 +1,5 @@
 # Quantum Support Vector Machine Fraud Detection
-Applying a Quantum Support Vector Machine for credit card fraud detection in Qiskit. The applied QSVM makes use of quantum enhanced feature spaces optimization based on the research paper, Supervised Learning with Quantum Enhanced Feature Spaces 
+Applying a Quantum Support Vector Machine for credit card fraud detection in Qiskit. The applied QSVM makes use of quantum enhanced feature space optimization based on the research paper, Supervised Learning with Quantum Enhanced Feature Spaces 
 
 Read the amazing original work of the researchers on the paper, Supervised Learning with Quantum Enhanced Feature Spaces. Which you can find here: https://arxiv.org/pdf/1804.11326.pdf
 
