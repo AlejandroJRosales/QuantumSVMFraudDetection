@@ -17,10 +17,10 @@ algorithm_globals.random_seed = 12345
 
 class QSVM:
     def __init__(self, data):
-        # init quantum kernel
         self.data = data
         # 29 dimensional space
         self.adhoc_dimension = 29
+        # init quantum kernel
         self.quantum_kernel()
 
     def fit(self, test=False):
@@ -67,9 +67,9 @@ class Data:
 
     def set_dataset(self, idx_start, idx_end, clean=False):
         df_subdata = self.clean_data(self.df[idx_start:idx_end]) if clean else self.df[idx_start:idx_end]
-        # for testing uncomment line; below grab first 2 features and use 20 samples
+        # for testing uncomment line below; here, grab first 2 features and use 20 samples
         # return np.asarray(df_subdata[['V1', 'V2']])[0:20], np.asarray(df_subdata['Class'])[0:20]
-        # for testing comment line below
+        # for testing comment out line below
         return np.asarray(df_subdata.drop(['Time', 'Class'], axis=1)), np.asarray(df_subdata['Class'])
 
     def clean_data(self, data):
@@ -128,9 +128,9 @@ class Data:
 credit_card_data = Data('input\creditcard.csv\creditcard.csv', summary=True)
 # credit_card_data.plot_dataset()
 
-# init quantum kernel
+# init quantum svm
 qsvm = QSVM(credit_card_data)
-# fit quantum kernel on credit card data and test fit
+# fit quantum svm on credit card data and test fit
 qsvm.fit(test=True)
 
 # This code is part of Qiskit.
