@@ -23,6 +23,13 @@ class QSVM:
         # init quantum kernel
         self.quantum_kernel()
 
+    def quantum_kernel(self):
+        # use 2-qubit ZZ feature mapping
+        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=self.adhoc_dimension, reps=2, entanglement="linear")
+        self.sampler = Sampler()
+        self.fidelity = ComputeUncompute(sampler=self.sampler)
+        self.adhoc_kernel = FidelityQuantumKernel(fidelity=self.fidelity, feature_map=self.adhoc_feature_map)
+
     def fit(self, test=False):
         print("Starting fit.")
         self.fit_kernel()
@@ -31,13 +38,6 @@ class QSVM:
             print("Starting test.")
             self.test_fit()
             print("Done.")
-
-    def quantum_kernel(self):
-        # init kenrel and 2-qubit ZZ feature mapping
-        self.adhoc_feature_map = ZZFeatureMap(feature_dimension=self.adhoc_dimension, reps=2, entanglement="linear")
-        self.sampler = Sampler()
-        self.fidelity = ComputeUncompute(sampler=self.sampler)
-        self.adhoc_kernel = FidelityQuantumKernel(fidelity=self.fidelity, feature_map=self.adhoc_feature_map)
 
     def fit_kernel(self):
         self.adhoc_svc = SVC(kernel=self.adhoc_kernel.evaluate)
